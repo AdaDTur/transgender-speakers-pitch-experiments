@@ -89,3 +89,26 @@ plt.xlabel('Months Out')
 plt.ylabel('Coefficient of Variation')
 plt.legend()
 plt.show()
+
+pitch_vars = ["Pitch_Range", "Pitch_Std_Dev", "CV"]
+time_vars = ["Out_Months", "HRT_Months"]
+
+correlation_results = []
+for pitch_var in pitch_vars:
+    for time_var in time_vars:
+        valid_data = df_tm[[pitch_var, time_var]].replace([np.inf, -np.inf], np.nan).dropna() 
+        r, p = pearsonr(valid_data[pitch_var], valid_data[time_var])
+        correlation_results.append({
+            "Pitch Feature": pitch_var,
+            "Time Variable": time_var,
+            "Pearson r": r,
+            "p-value": p
+        })
+
+correlation_df = pd.DataFrame(correlation_results)
+pivot_table = correlation_df.pivot(index="Pitch Feature", columns="Time Variable", values="Pearson r")
+plt.figure(figsize=(8, 6))
+sns.heatmap(pivot_table, annot=True, cmap="coolwarm", center=0, fmt=".2f")
+plt.title("Pearson Correlation Between Pitch Features and Time Variables for TM")
+plt.tight_layout()
+plt.savefig('correlation_tm.jpg')
